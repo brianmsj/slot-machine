@@ -1,6 +1,6 @@
 'use client';
+
 import { useEffect, useState } from "react";
-//no import needed
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import crypto from "crypto";
@@ -29,6 +29,12 @@ const generateRNG = (seed: string, round: number): number => {
   return value / 0xffffffff;
 };
 
+interface SpinResult {
+  grid: string[][];
+  win: number;
+  freeSpin: boolean;
+}
+
 export default function SlotMachine() {
   const initialGrid = Array(5).fill(null).map(() => Array(5).fill("❓"));
   const [grid, setGrid] = useState(initialGrid);
@@ -39,9 +45,9 @@ export default function SlotMachine() {
   const [betAmount, setBetAmount] = useState(50);
   const [freeSpins, setFreeSpins] = useState(0);
   const [animate, setAnimate] = useState(false);
-  const [sound, setSound] = useState(null);
-  const [stickyWilds, setStickyWilds] = useState([]);
-  const [history, setHistory] = useState([]);
+  const [sound, setSound] = useState<any>(null);
+  const [stickyWilds, setStickyWilds] = useState<[number, number][]>([]);
+  const [history, setHistory] = useState<SpinResult[]>([]);
   const [seed] = useState("user-seed");
   const [round, setRound] = useState(1);
 
@@ -168,12 +174,12 @@ export default function SlotMachine() {
       </div>
 
       <button
-  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-  onClick={spin}
-  disabled={spinning}
->
-  {spinning ? "Spinning..." : freeSpins > 0 ? "Free Spin" : "Spin"}
-</button>
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        onClick={spin}
+        disabled={spinning}
+      >
+        {spinning ? "Spinning..." : freeSpins > 0 ? "Free Spin" : "Spin"}
+      </button>
 
       {result && <div className="mt-4 text-lg font-semibold">{result}</div>}
 
@@ -190,3 +196,4 @@ export default function SlotMachine() {
     </div>
   );
 }
+
