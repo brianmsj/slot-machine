@@ -44,7 +44,7 @@ export default function SlotMachine() {
   const [balance, setBalance] = useState(1000);
   const [betAmount, setBetAmount] = useState(50);
   const [freeSpins, setFreeSpins] = useState(0);
-  const [animate, setAnimate] = useState(false);
+  const [animateCols, setAnimateCols] = useState<number[]>([]);
   const [sound, setSound] = useState<any>(null);
   const [stickyWilds, setStickyWilds] = useState<[number, number][]>([]);
   const [history, setHistory] = useState<SpinResult[]>([]);
@@ -66,7 +66,7 @@ export default function SlotMachine() {
     setSpinning(true);
     setResult("");
     setLineMultipliers(Array(5).fill(0));
-    setAnimate(true);
+    setAnimateCols([0, 1, 2, 3, 4]);
     if (sound?.spin) sound.spin.play();
     if (!freeSpins) setBalance(prev => prev - betAmount);
 
@@ -88,11 +88,6 @@ export default function SlotMachine() {
         const rng = generateRNG(seed, round + Math.random());
         return [0, 2, 3, 5, 10][Math.floor(rng * 5)];
       });
-
-      setGrid(newGrid);
-      setLineMultipliers(multipliers);
-      setSpinning(false);
-      setAnimate(false);
 
       let totalWin = 0;
       let scatterCount = 0;
@@ -134,17 +129,22 @@ export default function SlotMachine() {
         timestamp: new Date()
       });
 
-      setResult(
-        totalWin > 0
-          ? `💰 Win: $${totalWin}${scatterCount >= 3 ? " + 5 Free Spins!" : ""}`
-          : freeSpins > 0
-          ? `Free Spin used. No win.`
-          : "No win this time"
-      );
-
-      if (freeSpins > 0) setFreeSpins(prev => prev - 1);
-      setRound(prev => prev + 1);
-    }, 1000);
+      setTimeout(() => {
+        setGrid(newGrid);
+        setLineMultipliers(multipliers);
+        setSpinning(false);
+        setAnimateCols([]);
+        setResult(
+          totalWin > 0
+            ? `💰 Win: $${totalWin}${scatterCount >= 3 ? " + 5 Free Spins!" : ""}`
+            : freeSpins > 0
+            ? `Free Spin used. No win.`
+            : "No win this time"
+        );
+        if (freeSpins > 0) setFreeSpins(prev => prev - 1);
+        setRound(prev => prev + 1);
+      }, 1000);
+    }, 500);
   };
 
   return (
@@ -155,11 +155,18 @@ export default function SlotMachine() {
       <div className="mb-2 text-lg">Bet Amount: ${betAmount}</div>
       {freeSpins > 0 && <div className="mb-4 text-green-600 font-semibold">🎁 Free Spins Left: {freeSpins}</div>}
 
-      <div className={`grid grid-cols-5 gap-2 mb-4 text-3xl transition-transform duration-500 ${animate ? "animate-pulse" : ""}`}>
+      <div className="grid grid-cols-5 gap-2 mb-4 text-3xl">
         {grid.map((col, colIdx) => (
           <div key={colIdx} className="space-y-2">
             {col.map((symbol, rowIdx) => (
-              <div key={rowIdx} className="p-2 border rounded bg-white shadow">{symbol}</div>
+              <div
+                key={rowIdx}
+                className={`p-2 border rounded bg-white shadow transition-all duration-500 ease-in-out transform ${
+                  animateCols.includes(colIdx) ? "animate-spin-fast" : ""
+                }`}
+              >
+                {symbol}
+              </div>
             ))}
           </div>
         ))}
@@ -193,6 +200,17 @@ export default function SlotMachine() {
           ))}
         </ul>
       </div>
+
+      <style jsx>{`
+        @keyframes spin-fast {
+          0% { transform: rotateX(0deg); }
+          50% { transform: rotateX(180deg); }
+          100% { transform: rotateX(360deg); }
+        }
+        .animate-spin-fast {
+          animation: spin-fast 0.6s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
