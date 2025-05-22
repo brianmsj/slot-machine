@@ -1,3 +1,4 @@
+// Updated Slot Machine with fixed auto spin loop, Firebase, styling, bonus, and animations
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -53,7 +54,7 @@ export default function SlotMachine() {
   const [seed] = useState('user-seed');
   const [round, setRound] = useState(1);
   const [autoSpin, setAutoSpin] = useState(false);
-  const [denominations, setDenominations] = useState([10, 25, 50, 100]);
+  const [denominations] = useState([10, 25, 50, 100]);
 
   useEffect(() => {
     const winSound = new Audio('/sounds/win.mp3');
@@ -65,6 +66,7 @@ export default function SlotMachine() {
   const spin = async () => {
     if (!freeSpins && balance < betAmount) {
       setResult('Insufficient balance');
+      setAutoSpin(false);
       return;
     }
 
@@ -121,8 +123,8 @@ export default function SlotMachine() {
       }
 
       if (totalWin > 0) {
-        if (sound?.win) sound.win.play();
-        if (sound?.coin) sound.coin.play();
+        sound?.win?.play();
+        sound?.coin?.play();
         setSymbolFlash(true);
       }
 
@@ -160,11 +162,15 @@ export default function SlotMachine() {
   };
 
   useEffect(() => {
-    if (autoSpin && !spinning && balance >= betAmount) {
-      const timer = setTimeout(spin, 1500);
-      return () => clearTimeout(timer);
+    if (autoSpin && !spinning) {
+      if (balance >= betAmount) {
+        const timer = setTimeout(spin, 1500);
+        return () => clearTimeout(timer);
+      } else {
+        setAutoSpin(false);
+      }
     }
-  }, [autoSpin, spinning]);
+  }, [autoSpin, spinning, balance]);
 
   return (
     <div className="max-w-5xl mx-auto p-6 rounded-xl shadow-xl bg-gradient-to-br from-purple-900 via-indigo-800 to-black border border-purple-700 text-white">
@@ -222,9 +228,7 @@ export default function SlotMachine() {
           onChange={(e) => setBetAmount(Number(e.target.value))}
         >
           {denominations.map((d) => (
-            <option key={d} value={d}>
-              ${d}
-            </option>
+            <option key={d} value={d}>${d}</option>
           ))}
         </select>
       </div>
@@ -244,27 +248,16 @@ export default function SlotMachine() {
 
       <style jsx>{`
         @keyframes spin-fast {
-          0% {
-            transform: rotateX(0deg);
-          }
-          50% {
-            transform: rotateX(180deg);
-          }
-          100% {
-            transform: rotateX(360deg);
-          }
+          0% { transform: rotateX(0deg); }
+          50% { transform: rotateX(180deg); }
+          100% { transform: rotateX(360deg); }
         }
         .animate-spin-fast {
           animation: spin-fast 0.6s linear infinite;
         }
         @keyframes coin-flash {
-          0%,
-          100% {
-            background-color: white;
-          }
-          50% {
-            background-color: gold;
-          }
+          0%, 100% { background-color: white; }
+          50% { background-color: gold; }
         }
         .animate-coin-flash {
           animation: coin-flash 0.5s ease-in-out;
