@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+//no import needed
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 import crypto from "crypto";
@@ -167,9 +167,13 @@ export default function SlotMachine() {
         ))}
       </div>
 
-      <Button onClick={spin} disabled={spinning}>
-        {spinning ? "Spinning..." : freeSpins > 0 ? "Free Spin" : "Spin"}
-      </Button>
+      <button
+  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+  onClick={spin}
+  disabled={spinning}
+>
+  {spinning ? "Spinning..." : freeSpins > 0 ? "Free Spin" : "Spin"}
+</button>
 
       {result && <div className="mt-4 text-lg font-semibold">{result}</div>}
 
