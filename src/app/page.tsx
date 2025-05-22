@@ -23,7 +23,7 @@ const wildSymbol = "⭐";
 const scatterSymbol = "💰";
 const allSymbols = [...baseSymbols, wildSymbol, scatterSymbol];
 
-const generateRNG = (seed, round) => {
+const generateRNG = (seed: string, round: number): number => {
   const hash = crypto.createHash("sha256").update(`${seed}:${round}`).digest("hex");
   const value = parseInt(hash.substring(0, 8), 16);
   return value / 0xffffffff;
